@@ -28,3 +28,4 @@ yarn-error.log*
 # Server
 server/node_modules/
 server/dist/
+.vercel
