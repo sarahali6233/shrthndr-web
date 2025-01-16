@@ -214,15 +214,18 @@ const TypingTest: React.FC<TypingTestProps> = ({
       // Calculate the difference between new and current expanded text
       if (newValue.length < currentExpanded.length) {
         // Handle deletion
-        const beforeCursor = shorthandInput.slice(
+        const cursorPos = e.target.selectionStart || 0;
+        // Convert cursor position from expanded text to shorthand text
+        const expandedBeforeCursor = currentExpanded.slice(0, cursorPos);
+        const shorthandBeforeCursor = shorthandInput.slice(
           0,
-          Math.max(0, cursorPosition)
+          shorthandInput.length * (cursorPos / currentExpanded.length)
         );
-        const afterCursor = shorthandInput.slice(
-          Math.min(shorthandInput.length, cursorPosition + 1)
-        );
-        const newShorthand = beforeCursor + afterCursor;
-        setShorthandInput(newShorthand);
+        const deletePos = Math.floor(shorthandBeforeCursor.length);
+
+        const beforeCursor = shorthandInput.slice(0, deletePos);
+        const afterCursor = shorthandInput.slice(deletePos + 1);
+        setShorthandInput(beforeCursor + afterCursor);
       } else {
         // Handle addition
         const addedChar = newValue[cursorPosition - 1];
@@ -236,7 +239,7 @@ const TypingTest: React.FC<TypingTestProps> = ({
           const newShorthand = beforeCursor + newChar + afterCursor;
           setShorthandInput(newShorthand);
 
-          if (newValue.length >= targetText.length) {
+          if (expandText(newShorthand).length >= targetText.length) {
             finishTest();
           }
         }
