@@ -105,7 +105,8 @@ const TypingTest: React.FC<TypingTestProps> = ({
           const defaultTexts = {
             general:
               "Hey everyone, by the way I'm on my way to the meeting. In my opinion we should discuss this as soon as possible since the deadline is approaching.",
-            medical: "The patient was cool.",
+            medical:
+              "The patient presented with an elevated heart rate of 120 bpm. After a thorough diagnosis, the doctor wrote a prescription for medication. The patient's medical history was reviewed carefully.",
             legal:
               "The attorney filed a motion without notifying the defendant. The plaintiff claims jurisdiction in this state, but we may challenge that.",
             tech: "The application programming interface needs to connect to the database. The user interface and user experience need improvement, and there's a pull request waiting for review.",
