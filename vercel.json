@@ -2,6 +2,10 @@
   "version": 2,
   "builds": [
     {
+      "src": "server/src/index.ts",
+      "use": "@vercel/node"
+    },
+    {
       "src": "package.json",
       "use": "@vercel/static-build",
       "config": {
@@ -10,6 +14,10 @@
     }
   ],
   "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "server/src/index.ts"
+    },
     {
       "src": "/static/(.*)",
       "dest": "/static/$1"
@@ -30,5 +38,10 @@
       "src": "/(.*)",
       "dest": "/index.html"
     }
-  ]
+  ],
+  "env": {
+    "SUPABASE_URL": "https://kvgcdgldnjldvcurhnlq.supabase.co",
+    "SUPABASE_SERVICE_KEY": "@supabase_service_key",
+    "JWT_SECRET": "@jwt_secret"
+  }
 }
