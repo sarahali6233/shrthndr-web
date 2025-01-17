@@ -1,8 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
 import dotenv from "dotenv";
+import path from "path";
 
-// Load environment variables
-dotenv.config();
+// Load environment variables from server/.env
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
@@ -47,6 +48,7 @@ export interface TestData {
   normal_test: TestDetails;
   time_saved: TimeSavedDetails;
   user_id?: string | null;
+  feedback?: string;
 }
 
 export type ShorthandRule = {

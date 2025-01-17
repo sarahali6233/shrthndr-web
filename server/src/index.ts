@@ -246,17 +246,23 @@ app.post("/api/test-data", async (req, res) => {
     const { data, error } = await supabase
       .from("test_data")
       .insert({
-        user_id: "0",
+        user_id: "00000000-0000-0000-0000-000000000000",
         job_category,
         shorthand_test,
         normal_test,
         time_saved,
         feedback,
+        timestamp: new Date().toISOString(),
       })
-      .select();
+      .select()
+      .single();
 
-    if (error) throw error;
-    res.json({ data });
+    if (error) {
+      console.error("Error saving test data:", error);
+      return res.status(500).json({ error: "Failed to save test data" });
+    }
+
+    res.json(data);
   } catch (error) {
     console.error("Error saving test data:", error);
     res.status(500).json({ error: "Failed to save test data" });
