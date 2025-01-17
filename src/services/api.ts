@@ -40,7 +40,14 @@ export const login = async (
     throw new Error(error.message || "Login failed");
   }
 
-  return response.json();
+  const data = await response.json();
+  return {
+    token: data.token,
+    user: {
+      email: data.user.email,
+      isAdmin: data.user.is_admin,
+    },
+  };
 };
 
 export const getUsers = async (token: string): Promise<User[]> => {
