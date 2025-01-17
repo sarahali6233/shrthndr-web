@@ -133,7 +133,11 @@ const App: React.FC = () => {
                 path="/"
                 element={
                   <Container>
-                    <ShorthandInput token={auth?.token || ""} />
+                    <ShorthandInput
+                      token={auth?.token || ""}
+                      onInputChange={() => {}}
+                      onExpand={() => {}}
+                    />
                   </Container>
                 }
               />

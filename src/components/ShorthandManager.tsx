@@ -21,30 +21,27 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import {
-  ShorthandCategory,
   getShorthandCategories,
   updateShorthandCategory,
 } from "../services/api";
 import { ShorthandRule } from "../types/shorthand";
-import { refreshRules } from "../utils/shorthandRules";
 
 interface ShorthandManagerProps {
   token: string;
 }
 
 const ShorthandManager: React.FC<ShorthandManagerProps> = ({ token }) => {
-  const [categories, setCategories] = useState<ShorthandCategory[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState("general");
-  const [testText, setTestText] = useState("");
   const [rules, setRules] = useState<ShorthandRule[]>([]);
-  const [isAddingRule, setIsAddingRule] = useState(false);
+  const [selectedJob, setSelectedJob] = useState("general");
+  const [testText, setTestText] = useState("");
   const [newRule, setNewRule] = useState<ShorthandRule>({
     shorthand: "",
     expansion: "",
   });
   const [error, setError] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [categories, setCategories] = useState<any[]>([]);
+  const [isAddingRule, setIsAddingRule] = useState(false);
   const [addRuleError, setAddRuleError] = useState("");
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
   const [bulkRules, setBulkRules] = useState<ShorthandRule[]>([]);
@@ -54,19 +51,18 @@ const ShorthandManager: React.FC<ShorthandManagerProps> = ({ token }) => {
 
   useEffect(() => {
     loadCategories();
-  }, [token]);
+  }, []);
 
   useEffect(() => {
-    const category = categories.find((c) => c.category === selectedCategory);
+    const category = categories.find((c: any) => c.category === selectedJob);
     if (category) {
       setTestText(category.testText);
       setRules(category.rules);
     } else {
-      // Initialize new category with empty values
       setTestText("");
       setRules([]);
     }
-  }, [selectedCategory, categories]);
+  }, [selectedJob, categories]);
 
   const loadCategories = async () => {
     try {
@@ -82,11 +78,11 @@ const ShorthandManager: React.FC<ShorthandManagerProps> = ({ token }) => {
   };
 
   const handleSave = async () => {
-    if (!selectedCategory || !token) return;
+    if (!selectedJob || !token) return;
 
     try {
       setLoading(true);
-      await updateShorthandCategory(selectedCategory, testText, rules, token);
+      await updateShorthandCategory(selectedJob, testText, rules, token);
       setSuccessMessage("Changes saved successfully!");
     } catch (error) {
       console.error("Error saving changes:", error);
@@ -204,9 +200,9 @@ const ShorthandManager: React.FC<ShorthandManagerProps> = ({ token }) => {
 
       <Paper sx={{ mb: 4 }}>
         <Tabs
-          value={selectedCategory}
+          value={selectedJob}
           onChange={(e, value) => {
-            setSelectedCategory(value);
+            setSelectedJob(value);
             setBulkRules([]);
             setAddRuleError("");
           }}
@@ -234,8 +230,7 @@ const ShorthandManager: React.FC<ShorthandManagerProps> = ({ token }) => {
         >
           <Typography variant="h6" gutterBottom>
             Test Text for{" "}
-            {selectedCategory.charAt(0).toUpperCase() +
-              selectedCategory.slice(1)}
+            {selectedJob.charAt(0).toUpperCase() + selectedJob.slice(1)}
           </Typography>
         </Box>
         <TextField
@@ -244,7 +239,7 @@ const ShorthandManager: React.FC<ShorthandManagerProps> = ({ token }) => {
           rows={4}
           value={testText}
           onChange={(e) => setTestText(e.target.value)}
-          placeholder={`Enter test text for ${selectedCategory} category...`}
+          placeholder={`Enter test text for ${selectedJob} category...`}
           sx={{ mb: 2 }}
         />
       </Paper>
@@ -260,8 +255,7 @@ const ShorthandManager: React.FC<ShorthandManagerProps> = ({ token }) => {
         >
           <Typography variant="h6">
             Shortcuts for{" "}
-            {selectedCategory.charAt(0).toUpperCase() +
-              selectedCategory.slice(1)}
+            {selectedJob.charAt(0).toUpperCase() + selectedJob.slice(1)}
           </Typography>
           <Box>
             <Button
@@ -366,7 +360,7 @@ const ShorthandManager: React.FC<ShorthandManagerProps> = ({ token }) => {
       <Dialog open={isAddingRule} onClose={() => setIsAddingRule(false)}>
         <DialogTitle>
           Add New Shortcut to{" "}
-          {selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)}
+          {selectedJob.charAt(0).toUpperCase() + selectedJob.slice(1)}
         </DialogTitle>
         <DialogContent>
           <TextField

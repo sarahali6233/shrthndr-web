@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Paper,
@@ -86,28 +86,28 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ token, onLogout }) => {
   const [addUserError, setAddUserError] = useState("");
   const [tabValue, setTabValue] = useState(0);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const data = await getAdminTestData(token);
       setTestData(data);
     } catch (err) {
       setError("Failed to fetch test data");
     }
-  };
+  }, [token]);
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       const data = await getUsers(token);
       setUsers(data);
     } catch (err) {
       setError("Failed to fetch users");
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     fetchData();
     fetchUsers();
-  }, [token]);
+  }, [fetchData, fetchUsers]);
 
   const handleAddUser = async () => {
     try {

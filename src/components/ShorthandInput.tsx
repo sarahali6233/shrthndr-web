@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   TextField,
   Box,
@@ -20,7 +20,9 @@ interface TabPanelProps {
   value: number;
 }
 
-interface ShorthandInputProps {
+interface Props {
+  onInputChange: (input: string) => void;
+  onExpand?: (expanded: string) => void;
   token: string;
 }
 
@@ -37,7 +39,11 @@ const TabPanel: React.FC<TabPanelProps> = ({ children, value, index }) => {
   );
 };
 
-const ShorthandInput: React.FC<ShorthandInputProps> = ({ token }) => {
+const ShorthandInput: React.FC<Props> = ({
+  onInputChange,
+  onExpand,
+  token,
+}) => {
   const [shorthandInput, setShorthandInput] = useState("");
   const [selectedJob, setSelectedJob] = useState("general");
   const [tabValue, setTabValue] = useState(0);
@@ -65,6 +71,10 @@ const ShorthandInput: React.FC<ShorthandInputProps> = ({ token }) => {
 
     loadRules();
   }, [selectedJob]);
+
+  useEffect(() => {
+    onInputChange(shorthandInput);
+  }, [shorthandInput, onInputChange]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
