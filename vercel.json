@@ -41,7 +41,7 @@
   ],
   "env": {
     "SUPABASE_URL": "https://kvgcdgldnjldvcurhnlq.supabase.co",
-    "SUPABASE_SERVICE_KEY": "@supabase_service_key",
-    "JWT_SECRET": "@jwt_secret"
+    "SUPABASE_SERVICE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt2Z2NkZ2xkbmpsZHZjdXJobmxxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczNjcwODk4OSwiZXhwIjoyMDUyMjg0OTg5fQ.7rQDz6LC6gKEXOy9t6mWilKxAu5LpNfAaaq1Gze9WCc",
+    "JWT_SECRET": "6nY6Nz6waD09wjxG9o/IzI98xX0yzcpTVKIZv1d2PM0vMd9RWj2nMzTcNqVn8kc3DDHsf1x6JOmlRpyEC55odg=="
   }
 }
