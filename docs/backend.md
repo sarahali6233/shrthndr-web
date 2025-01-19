@@ -2,23 +2,19 @@
 
 ## Overview
 
-The backend is built using Node.js with Express and TypeScript, following a modular architecture pattern. It uses MongoDB as the database with Mongoose for object modeling.
+The backend is built using Node.js with Express and TypeScript, using Supabase as the database. It's deployed on Vercel at `https://shrthnder-server.vercel.app`.
 
 ## Project Structure
 
 ```
 server/
 ├── src/
-│   ├── config/         # Configuration files
-│   ├── controllers/    # Request handlers
-│   ├── middleware/     # Custom middleware
-│   ├── models/         # Mongoose models
-│   ├── routes/         # API routes
-│   ├── types/          # TypeScript types
-│   ├── utils/          # Utility functions
-│   └── index.ts        # Application entry point
-├── tests/              # Test files
-└── tsconfig.json       # TypeScript configuration
+│   ├── config/         # Configuration files (Supabase setup)
+│   ├── models/         # Data models and types
+│   └── index.ts        # Application entry point and route handlers
+├── dist/              # Compiled TypeScript output
+├── vercel.json        # Vercel deployment configuration
+└── tsconfig.json      # TypeScript configuration
 ```
 
 ## Core Components
@@ -30,300 +26,88 @@ server/
 Main server setup:
 
 - Express application configuration
-- Middleware integration
-- Route registration
+- CORS and JSON middleware
+- Route handlers
+- Supabase database connection
+- Error handling
+- Authentication middleware
+
+### Database Configuration
+
+**Location:** `src/config/supabase.ts`
+
+Supabase client setup and configuration:
+
 - Database connection
-- Error handling
+- Authentication
+- Table access
 
-```typescript
-const app = express();
-app.use(cors());
-app.use(express.json());
-app.use(morgan("dev"));
+### Deployment
 
-// Routes
-app.use("/api/auth", authRoutes);
-app.use("/api/test-data", testDataRoutes);
-app.use("/api/admin", adminRoutes);
+The backend is deployed on Vercel with the following configuration:
 
-mongoose.connect(MONGODB_URI);
-```
-
-### Authentication
-
-**Location:** `src/middleware/auth.ts`
-
-JWT-based authentication:
-
-- Token validation
-- Role verification
-- Protected route middleware
-
-```typescript
-interface AuthRequest extends Request {
-  user?: {
-    id: string;
-    email: string;
-    isAdmin: boolean;
-  };
+```json
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "src/index.ts",
+      "use": "@vercel/node",
+      "config": {
+        "outputDirectory": "dist"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "src/index.ts"
+    }
+  ]
 }
-
-const auth = async (req: AuthRequest, res: Response, next: NextFunction) => {
-  try {
-    const token = req.header("Authorization")?.replace("Bearer ", "");
-    // Token validation logic
-  } catch (error) {
-    res.status(401).send({ error: "Please authenticate." });
-  }
-};
 ```
 
-### Models
+### API Endpoints
 
-#### User Model
+#### Authentication
 
-**Location:** `src/models/user.ts`
+- `POST /api/auth/login` - User login
+- `POST /api/auth/register` - User registration
 
-```typescript
-const userSchema = new Schema(
-  {
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    password: {
-      type: String,
-      required: true,
-    },
-    isAdmin: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  { timestamps: true }
-);
+#### Test Data
 
-userSchema.pre("save", async function (next) {
-  // Password hashing logic
-});
-```
+- `GET /api/test-data` - Get user's test data
+- `POST /api/test-data` - Save test results
 
-#### TestData Model
+#### Admin Routes
 
-**Location:** `src/models/testData.ts`
+- `GET /api/admin/users` - Get all users (admin only)
+- `POST /api/admin/users` - Create new user (admin only)
+- `GET /api/admin/test-data` - Get all test data (admin only)
 
-```typescript
-const testDataSchema = new Schema({
-  timestamp: Date,
-  jobCategory: String,
-  shorthandTest: {
-    wpm: Number,
-    accuracy: Number,
-    timeInSeconds: Number,
-  },
-  normalTest: {
-    wpm: Number,
-    accuracy: Number,
-    timeInSeconds: Number,
-  },
-  timeSaved: {
-    seconds: Number,
-    percentage: Number,
-  },
-  userId: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-  },
-});
-```
+#### Shorthand Rules
 
-### Routes
+- `GET /api/shorthand` - Get all shorthand categories
+- `PUT /api/shorthand/:category` - Update shorthand category rules
 
-#### Authentication Routes
+### Security
 
-**Location:** `src/routes/auth.ts`
-
-```typescript
-router.post("/login", async (req, res) => {
-  // Login logic
-});
-
-router.post("/logout", auth, async (req, res) => {
-  // Logout logic
-});
-```
-
-#### Test Data Routes
-
-**Location:** `src/routes/testData.ts`
-
-```typescript
-router.post("/", async (req, res) => {
-  // Save test results
-});
-
-router.get("/admin", adminAuth, async (req, res) => {
-  // Retrieve test results for admin
-});
-```
-
-## Middleware
-
-### Authentication Middleware
-
-- JWT validation
-- Role-based access control
-- Error handling
-
-### Request Validation
-
-- Input sanitization
-- Schema validation
-- Type checking
+- JWT-based authentication
+- Role-based access control (admin vs regular users)
+- Environment variables for sensitive data
+- CORS configuration for frontend access
 
 ### Error Handling
 
-- Global error handler
-- Custom error classes
-- Error logging
-
-## Security
-
-### Authentication
-
-- JWT token generation
-- Password hashing (bcrypt)
-- Token expiration
-
-### Authorization
-
-- Role-based access
-- Route protection
-- Resource ownership
-
-### Data Protection
-
+- Global error handler for consistent error responses
 - Input validation
-- XSS prevention
-- Rate limiting
+- Proper HTTP status codes
+- Detailed error messages in development
 
-## Database Operations
+## Environment Variables
 
-### Connection Management
-
-- Connection pooling
-- Retry mechanism
-- Error handling
-
-### Queries
-
-- Efficient indexing
-- Query optimization
-- Aggregation pipelines
-
-### Data Validation
-
-- Schema validation
-- Type checking
-- Required fields
-
-## Error Handling
-
-### Custom Error Classes
-
-```typescript
-class APIError extends Error {
-  constructor(
-    message: string,
-    public status: number = 500,
-    public details?: any
-  ) {
-    super(message);
-  }
-}
 ```
-
-### Global Error Handler
-
-```typescript
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  if (err instanceof APIError) {
-    return res.status(err.status).json({
-      error: err.message,
-      details: err.details,
-    });
-  }
-
-  res.status(500).json({
-    error: "Internal Server Error",
-  });
-});
+SUPABASE_URL=your_supabase_url
+SUPABASE_SERVICE_KEY=your_supabase_service_key
+JWT_SECRET=your_jwt_secret
 ```
-
-## Testing
-
-### Unit Tests
-
-- Controller testing
-- Model testing
-- Utility function testing
-
-### Integration Tests
-
-- API endpoint testing
-- Database operations
-- Authentication flow
-
-### Test Environment
-
-- Separate test database
-- Mock data generation
-- Test utilities
-
-## Performance Optimization
-
-### Caching
-
-- Response caching
-- Database query caching
-- In-memory caching
-
-### Database
-
-- Indexing strategy
-- Query optimization
-- Connection pooling
-
-### Request Handling
-
-- Compression
-- Rate limiting
-- Request timeout
-
-## Deployment
-
-### Environment Variables
-
-```typescript
-export const config = {
-  PORT: process.env.PORT || 5001,
-  MONGODB_URI: process.env.MONGODB_URI,
-  JWT_SECRET: process.env.JWT_SECRET,
-  NODE_ENV: process.env.NODE_ENV,
-};
-```
-
-### Production Setup
-
-- PM2 process management
-- Logging configuration
-- Error tracking
-- Performance monitoring
-
-### CI/CD
-
-- Build process
-- Testing pipeline
-- Deployment automation
-- Version control
