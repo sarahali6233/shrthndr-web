@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Shrthnder Web is a web-based application for testing and comparing typing speeds using shorthand versus normal typing. The application consists of a React frontend and a Node.js/Express backend with MongoDB for data storage.
+Shrthnder Web is a web-based application for testing and comparing typing speeds using shorthand versus normal typing. The application consists of a React frontend and uses Supabase for backend services and data storage.
 
 ## Project Structure
 
@@ -13,13 +13,10 @@ shrthnder-web/
 │   ├── services/          # API service functions
 │   ├── types/             # TypeScript type definitions
 │   └── utils/             # Utility functions
-├── server/                # Backend Node.js application
-│   ├── src/
-│   │   ├── models/       # MongoDB models
-│   │   ├── middleware/   # Express middleware
-│   │   └── routes/       # API routes
-│   └── .env              # Environment configuration
-└── docs/                 # Documentation
+├── supabase/              # Supabase configuration
+│   ├── functions/         # Edge functions
+│   └── migrations/        # Database migrations
+└── docs/                  # Documentation
 ```
 
 ## Core Features
@@ -33,9 +30,9 @@ shrthnder-web/
 
 2. **User Management**
 
-   - User authentication
+   - User authentication via Supabase Auth
    - Admin and regular user roles
-   - Secure JWT-based authentication
+   - Secure session management
 
 3. **Admin Dashboard**
 
@@ -53,31 +50,25 @@ shrthnder-web/
 ### Prerequisites
 
 - Node.js
-- MongoDB
 - npm or yarn
+- Supabase account and project
 
 ### Installation
 
 1. Clone the repository
-2. Install frontend dependencies:
+2. Install dependencies:
    ```bash
    npm install
    ```
-3. Install backend dependencies:
+3. Set up environment variables:
    ```bash
-   cd server
-   npm install
+   cp .env.example .env
    ```
+   Update with your Supabase project credentials
 
 ### Running the Application
 
-1. Start MongoDB
-2. Start the backend server:
-   ```bash
-   cd server
-   npm run dev
-   ```
-3. Start the frontend:
+1. Start the development server:
    ```bash
    npm start
    ```
