@@ -2,21 +2,24 @@ import React, { useState, useRef, useEffect } from "react";
 import {
   Box,
   Typography,
+  TextField,
   Button,
   Paper,
-  TextField,
-  CircularProgress,
   Stack,
+  List,
+  ListItem,
+  ListItemText,
+  Stepper,
+  Step,
+  StepLabel,
+  CircularProgress,
   Tabs,
   Tab,
   Slider,
   Chip,
-  Stepper,
-  Step,
-  StepLabel,
 } from "@mui/material";
 import { getCurrentRules } from "../utils/shorthandRules";
-import { API_URL } from "../services/api";
+import { getTestData, API_URL } from "../services/api";
 import { ShorthandRule } from "../types/shorthand";
 
 interface TypingTestProps {
@@ -64,14 +67,19 @@ const TypingTest: React.FC<TypingTestProps> = ({
     email: "",
   });
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const loadRules = async (selectedJob: string) => {
     try {
+      setLoading(true);
       const rules = await getCurrentRules(selectedJob);
       setRules(rules);
     } catch (error) {
       console.error("Error loading rules:", error);
+      setError("Failed to load shortcuts");
     } finally {
+      setLoading(false);
     }
   };
 
@@ -433,11 +441,7 @@ const TypingTest: React.FC<TypingTestProps> = ({
                 {Math.round(
                   inputText.trim() === targetText.trim()
                     ? 100
-                    : Math.min(
-                        99,
-                        (inputText.trim().length / targetText.trim().length) *
-                          100
-                      )
+                    : (inputText.trim().length / targetText.trim().length) * 100
                 )}
                 %
               </Typography>
@@ -473,12 +477,9 @@ const TypingTest: React.FC<TypingTestProps> = ({
                 {Math.round(
                   expandText(shorthandInput).trim() === targetText.trim()
                     ? 100
-                    : Math.min(
-                        99,
-                        (expandText(shorthandInput).trim().length /
-                          targetText.trim().length) *
-                          100
-                      )
+                    : (expandText(shorthandInput).trim().length /
+                        targetText.trim().length) *
+                        100
                 )}
                 %
               </Typography>
