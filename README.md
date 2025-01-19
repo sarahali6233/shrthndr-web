@@ -1,184 +1,96 @@
-# Shrthnder Web Application
+# Shrthnder Web Documentation
 
-A web-based shorthand typing test and training platform that helps users measure and improve their typing efficiency using shorthand rules.
+## Project Overview
 
-## Features
+Shrthnder Web is a web-based application for testing and comparing typing speeds using shorthand versus normal typing. The application consists of a React frontend and uses Supabase for backend services and data storage.
 
-- **Typing Test System**
+## Project Links
 
-  - Normal typing test
-  - Shorthand typing test
-  - Real-time WPM and accuracy tracking
-  - Time saved calculations
-
-- **Job-Specific Tests**
-
-  - General shorthand
-  - Medical transcription
-  - Legal documentation
-  - Technical writing
-
-- **User Management**
-
-  - User registration and login
-  - Admin dashboard
-  - Role-based access control
-
-- **Analytics**
-  - Detailed test results
-  - Performance metrics
-  - Time saved statistics
-  - CSV export functionality
-
-## Prerequisites
-
-- Node.js (v18 or higher)
-- MongoDB (v4.4 or higher)
-- npm or yarn
-
-## Installation
-
-1. Clone the repository:
-
-```bash
-git clone https://github.com/yourusername/shrthnder-web.git
-cd shrthnder-web
-```
-
-2. Install dependencies:
-
-```bash
-# Install frontend dependencies
-npm install
-
-# Install backend dependencies
-cd server
-npm install
-```
-
-3. Set up environment variables:
-
-```bash
-# In server directory
-cp .env.example .env
-```
-
-Edit `.env` file with your configuration:
-
-```
-PORT=5001
-MONGODB_URI=mongodb://localhost:27017/shrthnder
-JWT_SECRET=your_jwt_secret
-```
-
-## Running the Application
-
-1. Start MongoDB:
-
-```bash
-mongod
-```
-
-2. Start the backend server (from server directory):
-
-```bash
-npm run dev
-```
-
-3. Start the frontend (from project root):
-
-```bash
-npm start
-```
-
-The application will be available at:
-
-- Frontend: http://localhost:3000
-- Backend: http://localhost:5001
-
-## Default Credentials
-
-### Admin User
-
-- Email: admin@example.com
-- Password: admin123
-
-### Regular User
-
-- Email: user@tester.com
-- Password: user
-
-## Documentation
-
-Detailed documentation is available in the `docs` folder:
-
-- [Frontend Architecture](docs/frontend.md)
-- [Backend Architecture](docs/backend.md)
-- [API Documentation](docs/api.md)
-- [Database Schema](docs/database.md)
+- **Frontend Application:** [https://shrthnder-web.vercel.app/](https://shrthnder-web.vercel.app/)
+- **Admin Dashboard:** [https://shrthnder-web.vercel.app/admin](https://shrthnder-web.vercel.app/admin)
+- **API Endpoint:** [https://shrthnder-server.vercel.app/](https://shrthnder-server.vercel.app/)
 
 ## Project Structure
 
 ```
 shrthnder-web/
-├── src/                # Frontend source files
-│   ├── components/     # React components
-│   ├── contexts/       # React contexts
-│   ├── hooks/         # Custom hooks
-│   ├── services/      # API services
-│   └── utils/         # Utility functions
-├── server/            # Backend source files
-│   ├── src/           # Server source code
-│   ├── tests/         # Server tests
-│   └── tsconfig.json  # TypeScript config
-├── docs/             # Documentation
-├── public/           # Static files
-└── package.json      # Project dependencies
+├── src/                    # Frontend React application
+│   ├── components/         # React components
+│   ├── services/          # API service functions
+│   ├── types/             # TypeScript type definitions
+│   └── utils/             # Utility functions
+├── supabase/              # Supabase configuration
+│   ├── functions/         # Edge functions
+│   └── migrations/        # Database migrations
+└── docs/                  # Documentation
 ```
 
-## Key Features Implementation
+## Core Features
 
-### Typing Test
+1. **Typing Test System**
 
-The typing test system measures:
+   - Normal typing test
+   - Shorthand typing test
+   - Real-time WPM and accuracy calculation
+   - Time-saving comparison
 
-- Words per minute (WPM)
-- Accuracy percentage
-- Time saved using shorthand
-- Comparison between normal and shorthand typing
+2. **User Management**
 
-### Shorthand Rules
+   - User authentication via Supabase Auth
+   - Admin and regular user roles
+   - Secure session management
 
-Shorthand rules are categorized by job type:
+3. **Admin Dashboard**
 
-- Each category has specific abbreviations
-- Rules are automatically applied during typing
-- Custom rules can be added by admins
+   - View test results
+   - Manage shorthand rules
+   - Export data to CSV
 
-### Admin Dashboard
+4. **Shorthand Management**
+   - Multiple job categories
+   - Customizable shorthand rules
+   - Category-specific test texts
 
-Administrators can:
+## Getting Started
 
-- View all test results
-- Export data to CSV
-- Manage shorthand rules
-- Monitor user performance
+### Prerequisites
 
-## Contributing
+- Node.js
+- npm or yarn
+- Supabase account and project
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+### Installation
 
-## License
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Set up environment variables:
+   ```bash
+   cp .env.example .env
+   ```
+   Update with your Supabase project credentials
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+### Running the Application
 
-## Acknowledgments
+1. Start the development server:
+   ```bash
+   npm start
+   ```
 
-- Material-UI for the component library
-- MongoDB for the database
-- Express.js for the backend framework
-- React for the frontend framework
+### Default Credentials
+
+- Admin User:
+  - Email: admin@example.com
+  - Password: admin123
+- Regular User:
+  - Email: user@tester.com
+  - Password: user
+
+## Detailed Documentation
+
+- [Frontend Architecture](./frontend.md)
+- [Backend Architecture](./backend.md)
+- [API Documentation](./api.md)
+- [Database Schema](./database.md)

@@ -4,6 +4,12 @@
 
 Shrthnder Web is a web-based application for testing and comparing typing speeds using shorthand versus normal typing. The application consists of a React frontend and uses Supabase for backend services and data storage.
 
+## Project Links
+
+- **Frontend Application:** [https://shrthnder-web.vercel.app/](https://shrthnder-web.vercel.app/)
+- **Admin Dashboard:** [https://shrthnder-web.vercel.app/admin](https://shrthnder-web.vercel.app/admin)
+- **API Endpoint:** [https://shrthnder-server.vercel.app/](https://shrthnder-server.vercel.app/)
+
 ## Project Structure
 
 ```
