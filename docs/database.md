@@ -2,192 +2,188 @@
 
 ## Overview
 
-The application uses MongoDB as its database, with Mongoose for schema definition and validation. The database consists of three main collections: Users, TestData, and ShorthandCategories.
+The application uses Supabase's PostgreSQL database for data storage and management. The database schema consists of three main tables: users (extending Supabase Auth), test_data, and shorthand_categories.
 
-## Collections
+## Tables
 
-### Users Collection
+### Users Table (Auth.users extension)
 
-```typescript
-{
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    trim: true,
-    lowercase: true
-  },
-  password: {
-    type: String,
-    required: true
-  },
-  isAdmin: {
-    type: Boolean,
-    default: false
-  },
-  timestamps: true
-}
+```sql
+-- Extends Supabase Auth.users
+CREATE TABLE public.user_profiles (
+  id UUID REFERENCES auth.users NOT NULL PRIMARY KEY,
+  is_admin BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
+
+-- RLS Policies
+ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
 ```
 
-**Indexes:**
+**Policies:**
 
-- `email`: unique index
+- Users can read their own profile
+- Admins can read all profiles
+- Users can update their own profile
+- Admins can update any profile
 
-**Methods:**
+### Test Data Table
 
-- `comparePassword`: Compares plain text password with hashed password
+```sql
+CREATE TABLE public.test_data (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users NOT NULL,
+  job_category TEXT NOT NULL,
+  shorthand_test JSONB NOT NULL,
+  normal_test JSONB NOT NULL,
+  time_saved JSONB NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
 
-### TestData Collection
+  CONSTRAINT shorthand_test_schema CHECK (
+    shorthand_test ? 'wpm' AND
+    shorthand_test ? 'accuracy' AND
+    shorthand_test ? 'timeInSeconds'
+  ),
+  CONSTRAINT normal_test_schema CHECK (
+    normal_test ? 'wpm' AND
+    normal_test ? 'accuracy' AND
+    normal_test ? 'timeInSeconds'
+  ),
+  CONSTRAINT time_saved_schema CHECK (
+    time_saved ? 'seconds' AND
+    time_saved ? 'percentage'
+  )
+);
 
-```typescript
-{
-  timestamp: {
-    type: Date,
-    default: Date.now
-  },
-  jobCategory: {
-    type: String,
-    required: true
-  },
-  shorthandTest: {
-    wpm: Number,
-    accuracy: Number,
-    timeInSeconds: Number,
-    inputText: String
-  },
-  normalTest: {
-    wpm: Number,
-    accuracy: Number,
-    timeInSeconds: Number,
-    inputText: String
-  },
-  timeSaved: {
-    seconds: Number,
-    percentage: Number
-  },
-  userId: {
-    type: ObjectId,
-    ref: 'User',
-    required: true
-  },
-  timestamps: true
-}
+-- Indexes
+CREATE INDEX test_data_user_id_idx ON public.test_data(user_id);
+CREATE INDEX test_data_job_category_idx ON public.test_data(job_category);
+
+-- RLS Policies
+ALTER TABLE public.test_data ENABLE ROW LEVEL SECURITY;
 ```
 
-**Indexes:**
+**Policies:**
 
-- `userId, timestamp`: Compound index for efficient queries
-- `jobCategory`: Single field index
+- Users can read their own test data
+- Admins can read all test data
+- Users can create their own test data
+- No update/delete operations allowed
 
-### ShorthandCategory Collection
+### Shorthand Categories Table
 
-```typescript
-{
-  category: {
-    type: String,
-    required: true,
-    unique: true,
-    enum: ["general", "medical", "legal", "tech"]
-  },
-  testText: {
-    type: String,
-    required: true
-  },
-  rules: [{
-    shorthand: {
-      type: String,
-      required: true
-    },
-    expansion: {
-      type: String,
-      required: true
-    }
-  }]
-}
+```sql
+CREATE TABLE public.shorthand_categories (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  category TEXT NOT NULL UNIQUE,
+  test_text TEXT NOT NULL,
+  rules JSONB NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+
+  CONSTRAINT category_enum CHECK (
+    category IN ('general', 'medical', 'legal', 'tech')
+  ),
+  CONSTRAINT rules_schema CHECK (
+    jsonb_typeof(rules) = 'array' AND
+    jsonb_array_length(rules) > 0
+  )
+);
+
+-- RLS Policies
+ALTER TABLE public.shorthand_categories ENABLE ROW LEVEL SECURITY;
 ```
 
-**Indexes:**
+**Policies:**
 
-- `category`: unique index
+- All authenticated users can read
+- Only admins can create/update/delete
 
 ## Relationships
 
-### User -> TestData
+### Users -> Test Data
 
-- One-to-Many relationship
-- User's `_id` referenced in TestData's `userId` field
-- Populated when retrieving test data in admin dashboard
+- One-to-Many relationship via `user_id` foreign key
+- Enforced by foreign key constraint to `auth.users`
 
-### ShorthandCategory -> Rules
+### Categories -> Rules
 
-- Embedded document relationship
-- Rules array contained within each category document
-- No separate collection for rules
+- Contained within JSONB array in the `rules` column
+- Schema validated through CHECK constraints
 
 ## Data Validation
 
-### User Model
+### User Profiles
 
-- Email format validation
-- Password hashing before save
-- Unique email constraint
+- Automatic user creation through Supabase Auth triggers
+- Boolean validation for `is_admin`
+- Timestamp management for auditing
 
-### TestData Model
+### Test Data
 
-- Required fields validation
-- Numeric field type enforcement
-- Reference validation for userId
+- JSON schema validation through CHECK constraints
+- Foreign key constraint for user relationship
+- Timestamp management for auditing
 
-### ShorthandCategory Model
+### Shorthand Categories
 
-- Category enum validation
-- Required fields validation
-- Array validation for rules
+- Enum validation for category types
+- JSON array validation for rules
+- Unique constraint on category names
 
 ## Default Data
 
 ### Admin User
 
-```json
-{
-  "email": "admin@example.com",
-  "password": "<hashed>admin123",
-  "isAdmin": true
-}
+```sql
+INSERT INTO auth.users /* handled by Supabase Auth */
+INSERT INTO public.user_profiles (id, is_admin)
+VALUES ('admin-uuid', true);
 ```
 
 ### Default Categories
 
-```json
-{
-  "category": "general",
-  "testText": "...",
-  "rules": [
-    {
-      "shorthand": "btw",
-      "expansion": "by the way"
-    },
-    ...
-  ]
-}
+```sql
+INSERT INTO public.shorthand_categories
+(category, test_text, rules) VALUES
+('general', '...', '[
+  {"shorthand": "btw", "expansion": "by the way"},
+  ...
+]');
 ```
 
 ## Performance Considerations
 
 ### Indexes
 
-- Strategic indexes for common queries
-- Compound indexes for related fields
-- Text indexes for search functionality
+- B-tree indexes on frequently queried columns
+- Foreign key indexes for relationships
+- GiST indexes for text search capabilities
 
 ### Data Structure
 
-- Embedded documents for related data
-- References for scalable relationships
-- Optimized field types
+- JSONB for flexible schema elements
+- Normalized tables for core entities
+- Efficient constraint validation
 
 ### Query Optimization
 
-- Selective field projection
-- Efficient population strategies
-- Batch operations where possible
+- RLS policies for security
+- Efficient joins through foreign keys
+- Prepared statements for common queries
+
+## Security
+
+### Row Level Security
+
+- Enforced on all tables
+- Policy-based access control
+- Role-based permissions
+
+### Authentication
+
+- Integrated with Supabase Auth
+- JWT token validation
+- Secure session management
