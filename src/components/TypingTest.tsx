@@ -41,6 +41,11 @@ interface Feedback {
   email: string;
 }
 
+interface CharacterState {
+  char: string;
+  state: "correct" | "incorrect" | "pending";
+}
+
 const TypingTest: React.FC<TypingTestProps> = ({
   selectedJob,
   expandText,
@@ -69,6 +74,7 @@ const TypingTest: React.FC<TypingTestProps> = ({
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [characters, setCharacters] = useState<CharacterState[]>([]);
 
   const loadRules = async (selectedJob: string) => {
     try {
@@ -194,6 +200,27 @@ const TypingTest: React.FC<TypingTestProps> = ({
     return Math.round((correctWords.length / targetWords.length) * 100);
   };
 
+  const updateCharacterStates = (input: string, target: string) => {
+    const chars: CharacterState[] = [];
+    const targetChars = target.split("");
+    const inputChars = input.split("");
+
+    targetChars.forEach((char, i) => {
+      if (i < inputChars.length) {
+        chars.push({
+          char: inputChars[i],
+          state: inputChars[i] === char ? "correct" : "incorrect",
+        });
+      } else {
+        chars.push({
+          char,
+          state: "pending",
+        });
+      }
+    });
+    setCharacters(chars);
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;
     const cursorPosition = e.target.selectionStart || 0;
@@ -204,19 +231,15 @@ const TypingTest: React.FC<TypingTestProps> = ({
 
     if (step === 0) {
       setInputText(newValue);
+      updateCharacterStates(newValue, targetText);
       if (newValue.length >= targetText.length) {
         finishTest();
       }
     } else {
-      // For shorthand typing test
       const currentExpanded = expandText(shorthandInput);
 
-      // Calculate the difference between new and current expanded text
       if (newValue.length < currentExpanded.length) {
-        // Handle deletion
         const cursorPos = e.target.selectionStart || 0;
-        // Convert cursor position from expanded text to shorthand text
-        const expandedBeforeCursor = currentExpanded.slice(0, cursorPos);
         const shorthandBeforeCursor = shorthandInput.slice(
           0,
           shorthandInput.length * (cursorPos / currentExpanded.length)
@@ -225,9 +248,10 @@ const TypingTest: React.FC<TypingTestProps> = ({
 
         const beforeCursor = shorthandInput.slice(0, deletePos);
         const afterCursor = shorthandInput.slice(deletePos + 1);
-        setShorthandInput(beforeCursor + afterCursor);
+        const newShorthand = beforeCursor + afterCursor;
+        setShorthandInput(newShorthand);
+        updateCharacterStates(expandText(newShorthand), targetText);
       } else {
-        // Handle addition
         const addedChar = newValue[cursorPosition - 1];
         if (addedChar) {
           const beforeCursor = shorthandInput.slice(0, cursorPosition - 1);
@@ -238,6 +262,7 @@ const TypingTest: React.FC<TypingTestProps> = ({
             : addedChar;
           const newShorthand = beforeCursor + newChar + afterCursor;
           setShorthandInput(newShorthand);
+          updateCharacterStates(expandText(newShorthand), targetText);
 
           if (expandText(newShorthand).length >= targetText.length) {
             finishTest();
@@ -391,6 +416,38 @@ const TypingTest: React.FC<TypingTestProps> = ({
     </Paper>
   );
 
+  const renderCharacters = (chars: CharacterState[]) => (
+    <Box
+      sx={{ fontFamily: "monospace", fontSize: "1.2rem", lineHeight: "1.5" }}
+    >
+      {chars.map((char, index) => (
+        <Typography
+          component="span"
+          key={index}
+          sx={{
+            color:
+              char.state === "correct"
+                ? "#a3be8c"
+                : char.state === "incorrect"
+                ? "#bf616a"
+                : "#4c566a",
+            backgroundColor:
+              char.state === "incorrect"
+                ? "rgba(191, 97, 106, 0.1)"
+                : "transparent",
+            borderLeft:
+              index === chars.filter((c) => c.state !== "pending").length
+                ? "2px solid #88c0d0"
+                : "none",
+            padding: "0 1px",
+          }}
+        >
+          {char.char}
+        </Typography>
+      ))}
+    </Box>
+  );
+
   const renderStepContent = () => {
     switch (step) {
       case 0:
@@ -423,7 +480,9 @@ const TypingTest: React.FC<TypingTestProps> = ({
               <Typography variant="subtitle1" gutterBottom>
                 Type the following text:
               </Typography>
-              {renderHighlightedText(targetText, inputText)}
+              {characters.length > 0
+                ? renderCharacters(characters)
+                : renderHighlightedText(targetText, inputText)}
             </Paper>
             <TextField
               fullWidth
@@ -459,7 +518,9 @@ const TypingTest: React.FC<TypingTestProps> = ({
               <Typography variant="subtitle1" gutterBottom>
                 Type the same text using shortcuts:
               </Typography>
-              {renderHighlightedText(targetText, expandText(shorthandInput))}
+              {characters.length > 0
+                ? renderCharacters(characters)
+                : renderHighlightedText(targetText, expandText(shorthandInput))}
             </Paper>
             <TextField
               fullWidth
